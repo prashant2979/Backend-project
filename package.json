@@ -1,0 +1,16 @@
+{
+  "name": "backend-phase2",
+  "version": "1.0.0",
+  "description": "A backend ",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "backend",
+    "chai"
+  ],
+  "author": "prashant choudhary",
+  "license": "ISC"
+}
