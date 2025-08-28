@@ -1,47 +1,34 @@
-import {v2 as cloudinary} from "cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+import fs from "fs";
 
-import fs from  "fs"
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
+const uploadOnCloudinary = async (localFilePath) => {
+  try {
+    if (!localFilePath) throw new Error("No file path provided");
 
-
-(async function() {
-
-    // Configuration
-    cloudinary.config({ 
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-        api_key: process.env.CLOUDINARY_API_KEY, 
-        api_secret: process.env.CLOUDINARY_API_secret // Click 'View API Keys' above to copy your API secret
+    // Upload file to Cloudinary
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      resource_type: "auto",
+      use_filename: true,     // keep original filename
+      unique_filename: true,  // ensure uniqueness
+      overwrite: false,       // prevent overwriting existing files
     });
-    
-    // Upload an image
-     const uploadResult = await cloudinary.uploader
-       .upload(
-           'https://res.cloudinary.com/demo/image/upload/getting-started/shoes.jpg', {
-               public_id: 'shoes',
-           }
-       )
-       .catch((error) => {
-           
-           console.log(error);
-       });
-    
-    console.log(uploadResult);
-    
-    // Optimize delivery by resizing and applying auto-format and auto-quality
-    const optimizeUrl = cloudinary.url('shoes', {
-        fetch_format: 'auto',
-        quality: 'auto'
-    });
-    
-    console.log(optimizeUrl);
-    
-    // Transform the image: auto-crop to square aspect_ratio
-    const autoCropUrl = cloudinary.url('shoes', {
-        crop: 'auto',
-        gravity: 'auto',
-        width: 500,
-        height: 500,
-    });
-    
-    console.log(autoCropUrl);    
-})();
+
+    // Remove local file after upload
+    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+
+    return response;  // still returning full response as before
+  } catch (error) {
+    // Remove local file only if it exists
+    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
+    console.error("Cloudinary upload failed:", error.message || error);
+    return null;
+  }
+};
+
+export default uploadOnCloudinary;
